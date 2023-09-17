@@ -1,0 +1,26 @@
+<!-- frontend/index.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Button Click</title>
+</head>
+<body>
+    <h1>Click the button to get data</h1>
+    <button id="getDataButton">Get Data</button>
+    <div id="dataContainer"></div>
+
+    <script>
+        document.getElementById("getDataButton").addEventListener("click", async () => {
+            try {
+                const response = await fetch("/get_data_from_backend");
+                const data = await response.json();
+                document.getElementById("dataContainer").innerText = JSON.stringify(data, null, 2);
+            } catch (error) {
+                console.error(error);
+            }
+        });
+    </script>
+</body>
+</html>
