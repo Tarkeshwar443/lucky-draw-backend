@@ -1,9 +1,15 @@
 import pandas as pd
 import mysql.connector
-from fastapi import FastAPI, UploadFile
-
+from fastapi import FastAPI, UploadFile,File
+from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI()
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 # Define your MySQL database configuration
 mysql_config = {
     'host': 'localhost',
@@ -40,9 +46,10 @@ def excel_from_url_to_mysql(excel_url, sheet_name, table_name):
     connection.close()
 
 @app.post("/uploadfile/")
-async def upload_file(file: UploadFile):
+async def upload_file(file: UploadFile=File(...)):
     # Read the file content
-    excel_url = await file.read()
+    excel_url = file.file.read()
+    print(file)
     excel_from_url_to_mysql(excel_url, sheet_name, table_name)
     
     # Process the file content as needed
