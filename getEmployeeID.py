@@ -27,6 +27,7 @@ def get_random_employee_id():
     try:
         connection = pymysql.connect(**db_config)
         with connection.cursor() as cursor:
+            
             cursor.execute("SELECT id FROM participants WHERE used = 0")
             employee_ids = [list(row) for row in cursor.fetchall()]
             if not employee_ids:

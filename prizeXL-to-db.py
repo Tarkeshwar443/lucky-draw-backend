@@ -10,36 +10,39 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 # Define your MySQL database configuration
 mysql_config = {
     'host': 'localhost',
     'user': 'root',
     'password': 'Mysql123',
-    'database': 'employelist',
+    'database': 'prizelist',
 }
-# Remote URL of the Excel file
-#excel_url = 'input.xlsx'
 
-# Create a function to read data from a remote Excel file and store it in MySQL
-def excel_from_url_to_mysql(excel_url, sheet_name, table_name):
+# Create a function to read data from an Excel file and store it in MySQL
+def excel_file_to_mysql(excel_file, sheet_name, table_name):
     # Read data from the remote Excel file into a DataFrame
-    df = pd.read_excel(excel_url, sheet_name=sheet_name)
+    df = pd.read_excel(excel_file, sheet_name=sheet_name)
     print(df)
 
     # Connect to the MySQL database
     connection = mysql.connector.connect(**mysql_config)
     cursor = connection.cursor()
 
+    # Drop the table if it exists
+    drop_table_query = f"DROP TABLE IF EXISTS {table_name}"
+    cursor.execute(drop_table_query)
+
     # Create a MySQL table if it doesn't exist
-    create_table_query = f"CREATE TABLE IF NOT EXISTS {table_name} ("
-    create_table_query += "employee_id INT, employee_name VARCHAR(255))"
+    create_table_query = f"CREATE TABLE {table_name} ("
+    create_table_query += "Prize_ID INT, Prize_Name VARCHAR(255))"
     cursor.execute(create_table_query)
     connection.commit()
 
     # Insert data from the DataFrame into the MySQL table
     for _, row in df.iterrows():
-        insert_query = f"INSERT INTO {table_name} (employee_id, employee_name) VALUES (%s, %s)"
-        cursor.execute(insert_query, (int(row['Employee ID']), row['Employee Name']))
+        insert_query = f"INSERT INTO {table_name} (Prize_ID, Prize_Name) VALUES (%s, %s)"
+        cursor.execute(insert_query, (int(row['Prize ID']), row['Prize Name']))
         connection.commit()
 
     # Close the database connection
@@ -48,18 +51,14 @@ def excel_from_url_to_mysql(excel_url, sheet_name, table_name):
 @app.post("/uploadfile/")
 async def upload_file(file: UploadFile=File(...)):
     # Read the file content
-    excel_url = file.file.read()
-    print(file)
-    excel_from_url_to_mysql(excel_url, sheet_name, table_name)
-    
-    # Process the file content as needed
-    # For example, you can save it to disk, parse it, or perform any other operations
-    
-    # Return a response or do something with the file content
+    excel_file = file.file.read()
+    #print(excel_file)
+    excel_file_to_mysql(excel_file, sheet_name, table_name)
+
     return {"filename": file.filename}
 
 # Usage example
 sheet_name = 'Sheet1'
-table_name = 'details'
-excel_url='input.xlsx'
-excel_from_url_to_mysql(excel_url, sheet_name, table_name)
+table_name = 'prizeDetails'
+#excel_url='input.xlsx'
+#excel_file_to_mysql(excel_url, sheet_name, table_name)
