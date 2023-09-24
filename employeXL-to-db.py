@@ -35,13 +35,13 @@ def excel_file_to_mysql(excel_file, sheet_name, table_name):
 
     # Create a MySQL table if it doesn't exist
     create_table_query = f"CREATE TABLE {table_name} ("
-    create_table_query += "Employee_ID INT, Employee_Name VARCHAR(255))"
+    create_table_query += "Employee_ID INT, Employee_Name VARCHAR(255),used int)"
     cursor.execute(create_table_query)
     connection.commit()
 
     # Insert data from the DataFrame into the MySQL table
     for _, row in df.iterrows():
-        insert_query = f"INSERT INTO {table_name} (Employee_ID, Employee_Name) VALUES (%s, %s)"
+        insert_query = f"INSERT INTO {table_name} (Employee_ID, Employee_Name, used) VALUES (%s, %s,0)"
         cursor.execute(insert_query, (int(row['Employee ID']), row['Employee Name']))
         connection.commit()
 

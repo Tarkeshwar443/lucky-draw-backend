@@ -48,14 +48,16 @@ def excel_file_to_mysql(excel_file, sheet_name, table_name):
     # Close the database connection
     connection.close()
 
-@app.post("/uploadfile/")
-async def upload_file(file: UploadFile=File(...)):
+@app.post("/uploadfilePrize/")
+async def upload_file_prize(file: UploadFile=File(...)):
     # Read the file content
     excel_file = file.file.read()
     #print(excel_file)
     excel_file_to_mysql(excel_file, sheet_name, table_name)
 
     return {"filename": file.filename}
+
+
 
 # Usage example
 sheet_name = 'Sheet1'

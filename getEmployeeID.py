@@ -5,15 +5,16 @@ import random
 import pymysql
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
-
-# Determine the path to the 'frontend' directory
-#frontend_dir = os.path.join(os.path.dirname(__file__), "frontend")
-
-# Serve the frontend files
-#app.mount("/frontend", StaticFiles(directory=frontend_dir), name="frontend")
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 # Database configuration
 db_config = {
     "host": "localhost",
@@ -28,17 +29,17 @@ def get_random_employee_id():
         connection = pymysql.connect(**db_config)
         with connection.cursor() as cursor:
             
-            cursor.execute("SELECT id FROM participants WHERE used = 0")
+            cursor.execute("SELECT Employee_ID FROM employedetails WHERE used = 0")
             employee_ids = [list(row) for row in cursor.fetchall()]
             if not employee_ids:
                 # If all IDs have been used, reset them to unused
-                cursor.execute("UPDATE participants SET used = 0")
+                cursor.execute("UPDATE employedetails SET used = 0")
                 connection.commit()
-                cursor.execute("SELECT id FROM participants WHERE used = 0")
+                cursor.execute("SELECT Employee_ID FROM employedetails WHERE used = 0")
                 employee_ids = [list(row) for row in cursor.fetchall()]
             random_id = random.choice(employee_ids)
             # Mark the ID as used by updating the 'used' flag to 1
-            cursor.execute("UPDATE participants SET used = 1 WHERE id = %s", random_id)
+            cursor.execute("UPDATE employedetails SET used = 1 WHERE Employee_ID = %s", random_id)
             connection.commit()
             return random_id
     except Exception as e:
@@ -53,7 +54,7 @@ def get_random_employee():
     try:
         connection = pymysql.connect(**db_config)
         with connection.cursor() as cursor:
-            cursor.execute("SELECT * FROM participants WHERE id = %s", employee_id)
+            cursor.execute("SELECT * FROM employedetails WHERE Employee_ID = %s", employee_id)
             employee_data = cursor.fetchone()
             if employee_data:
                 # You can customize this response based on your database schema
