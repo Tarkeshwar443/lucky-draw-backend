@@ -189,3 +189,101 @@ async def get_prize_numbber():
         return total_prize
     except Exception as e:
          raise {"message": "Total Prize not found"}
+
+
+  # Function to check if a row exists in the database
+def row_exists(cursor, row_data):
+    query = "SELECT COUNT(*) FROM empDetails WHERE EmpID = %s"
+    cursor.execute(query, (row_data["EmpID"],))
+    #print(row_data["EmpID"]);
+    count = cursor.fetchone()[0]
+    return count > 0
+
+@app.post("/update-csv-onsubmit")
+async def update_csv_data():
+    try:
+        # Read the CSV file
+        #csv_file = "dummy.csv"  # Replace with the path to your CSV file
+
+         # Make an HTTP GET request to the external API to get the CSV file
+        api_url = "https://example.com/api/get-csv"  # Replace with the actual API URL
+        response = requests.get(api_url)
+        
+        if response.status_code != 200:
+            raise HTTPException(status_code=500, detail="Failed to fetch CSV data from the external API")
+
+        # Read the CSV content from the API response
+        csv_content = response.text
+
+        # Parse CSV content into a DataFrame
+        df = pd.read_csv(pd.compat.StringIO(csv_content))
+        #df = pd.read_csv(csv_file)
+        print(df)
+        # Connect to the MySQL database
+        connection = mysql.connector.connect(**db_config)
+        cursor = connection.cursor()
+        drop_table_query = "DROP TABLE IF EXISTS EmpDetails"
+        cursor.execute(drop_table_query)
+        create_table_query = """
+        CREATE TABLE IF NOT EXISTS EmpDetails (
+            EmpID INT PRIMARY KEY,
+            EmpName VARCHAR(255),
+            used INT
+        )
+        """
+        cursor.execute(create_table_query)
+
+        # Iterate through each row in the CSV
+        for index, row in df.iterrows():
+            if not row_exists(cursor, row):
+                # Row doesn't exist, insert it
+                insert_query = """
+                INSERT INTO empDetails (EmpID,EmpName, used)
+                VALUES (%s, %s, %s)
+                """
+                cursor.execute(insert_query, (row["EmpID"], row["EmpName"], 0 ))
+# Commit the changes to the database
+        connection.commit()
+        return {"message": "CSV data updated in the database"}
+
+    except Error as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+
+
+
+
+
+
+
+@app.post("/update-csv-onspin")
+async def update_csv_data():
+    try:
+        # Read the CSV file
+        csv_file = "dummy.csv"  # Replace with the path to your CSV file
+        df = pd.read_csv(csv_file)
+        print(df)
+        # Connect to the MySQL database
+        connection = mysql.connector.connect(**db_config)
+        cursor = connection.cursor()
+
+        # Iterate through each row in the CSV
+        for index, row in df.iterrows():
+            if not row_exists(cursor, row):
+                # Row doesn't exist, insert it
+                insert_query = """
+                INSERT INTO employeDetails (Employee_ID,Employee_Name, used)
+                VALUES (%s, %s, %s)
+                """
+                cursor.execute(insert_query, (row["EmpID"], row["EmpName"], 0 ))
+# Commit the changes to the database
+        connection.commit()
+        return {"message": "CSV data updated in the database"}
+
+    except Error as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+
+    # finally:
+    #     # Close the database connection
+    #     if connection.is_connected():
+    #         cursor.close()
+    #         connection.close()
