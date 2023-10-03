@@ -8,6 +8,8 @@ import mysql.connector
 from fastapi import FastAPI, UploadFile,File,HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
+import requests
+import io
 
 app = FastAPI()
 app.add_middleware(
@@ -199,7 +201,7 @@ def row_exists(cursor, row_data):
     count = cursor.fetchone()[0]
     return count > 0
 
-@app.post("/update-csv-onsubmit")
+@app.get("/update-csv-onsubmit")
 async def update_csv_data():
     try:
         # Read the CSV file
@@ -216,7 +218,7 @@ async def update_csv_data():
         csv_content = response.text
 
         # Parse CSV content into a DataFrame
-        df = pd.read_csv(pd.compat.StringIO(csv_content))
+        df = pd.read_csv(io.StringIO(csv_content))
         #df = pd.read_csv(csv_file)
         print(df)
         # Connect to the MySQL database
@@ -246,7 +248,7 @@ async def update_csv_data():
         connection.commit()
         return {"message": "CSV data updated in the database"}
 
-    except Error as e:
+    except Exception as e:
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
 
@@ -255,7 +257,7 @@ async def update_csv_data():
 
 
 
-@app.post("/update-csv-onspin")
+@app.get("/update-csv-onspin")
 async def update_csv_data():
     try:
         # Read the CSV file
