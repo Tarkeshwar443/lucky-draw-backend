@@ -226,11 +226,23 @@ async def update_csv_data():
         cursor = connection.cursor()
         drop_table_query = "DROP TABLE IF EXISTS EmpDetails"
         cursor.execute(drop_table_query)
+        drop_table_query = "DROP TABLE IF EXISTS winnerDetails"
+        cursor.execute(drop_table_query)
         create_table_query = """
         CREATE TABLE IF NOT EXISTS EmpDetails (
             EmpID INT PRIMARY KEY,
             EmpName VARCHAR(255),
             used INT
+        )
+        """
+        cursor.execute(create_table_query)
+
+        create_table_query = """
+        CREATE TABLE IF NOT EXISTS winnerDetails (
+            serial_number INT PRIMARY KEY,
+            EmpID INT,
+            EmpName VARCHAR(255),
+            prize_name VARCHAR(255)
         )
         """
         cursor.execute(create_table_query)
@@ -250,10 +262,6 @@ async def update_csv_data():
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
-
-
-
-
 
 
 
@@ -289,3 +297,25 @@ async def update_csv_data():
     #     if connection.is_connected():
     #         cursor.close()
     #         connection.close()
+
+
+ #to store backup data of prize
+@app.post("/store_data/")
+async def store_data(serial_number: int, EmpID: int, EmpName: str, prize_name: str):
+    try:
+        # Connect to the MySQL database
+        conn = mysql.connector.connect(**db_config)
+        cursor = conn.cursor()
+        print(EmpName)
+        # Insert data into the database
+        insert_query = "INSERT INTO winnerDetails (serial_number, EmpID, EmpName, prize_name) VALUES (%s, %s, %s, %s)"
+        data = (serial_number, EmpID, EmpName, prize_name)
+        cursor.execute(insert_query, data)
+
+        # Commit changes and close the connection
+        conn.commit()
+        #conn.close()
+
+        return {"message": "Data stored successfully"}
+    except Exception as e:
+        return HTTPException(status_code=500, detail=str(e))    
