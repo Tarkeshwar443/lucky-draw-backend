@@ -5,11 +5,12 @@ import random
 import pymysql
 import pandas as pd
 import mysql.connector
-from fastapi import FastAPI, UploadFile,File,HTTPException
+from fastapi import FastAPI, UploadFile,File,HTTPException,Body,Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 import requests
 import io
+import json
 
 app = FastAPI()
 app.add_middleware(
@@ -172,7 +173,7 @@ async def get_data_by_id(item_id: int):
             print(prize_name)
             if prize_name:
                 # You can customize this response based on your database schema
-                return prize_name
+                return prize_name[0]
             
             else:
                 return {"message": "Prize Name not found"}
@@ -301,21 +302,51 @@ async def update_csv_data():
 
  #to store backup data of prize
 @app.post("/store_data/")
-async def store_data(serial_number: int, EmpID: int, EmpName: str, prize_name: str):
+async def store_data(request:str=Body(...)):
+    print(json.loads(request))
+    #print(json.loads(request)['serial_number'])
+    # print(json.loads(request)['EmpID'])
+    # print(json.loads(request)['EmpName'])
+    # print(json.loads(request)['prize_name'])
     try:
         # Connect to the MySQL database
         conn = mysql.connector.connect(**db_config)
         cursor = conn.cursor()
-        print(EmpName)
         # Insert data into the database
-        insert_query = "INSERT INTO winnerDetails (serial_number, EmpID, EmpName, prize_name) VALUES (%s, %s, %s, %s)"
-        data = (serial_number, EmpID, EmpName, prize_name)
+        insert_query = "INSERT INTO winnerDetails (serial_number,EmpID, EmpName, prize_name) VALUES (%s, %s, %s, %s)"
+        data = (json.loads(request)['serial_number'], json.loads(request)['EmpID'], json.loads(request)['EmpName'],json.loads(request)['prize_name'] )
         cursor.execute(insert_query, data)
-
+        # print(cursor)
         # Commit changes and close the connection
         conn.commit()
         #conn.close()
+    
 
-        return {"message": "Data stored successfully"}
+        return Response(content="Data stored successfully",status_code=200)
     except Exception as e:
         return HTTPException(status_code=500, detail=str(e))    
+
+
+@app.get("/get_data/")
+async def get_data():
+    try:
+        # Connect to the MySQL database
+        conn = mysql.connector.connect(**db_config)
+        cursor = conn.cursor()
+
+        # Retrieve all data from the database
+        select_query = "SELECT * FROM winnerdetails"
+        cursor.execute(select_query)
+
+        # Fetch all rows
+        data = cursor.fetchall()
+
+        # Close the connection
+        conn.close()
+
+        # Convert data to a list of dictionaries for JSON response
+        result = [{"serial_number": row[0], "EmpID": row[1], "EmpName": row[2], "prize_name": row[3]} for row in data]
+
+        return result
+    except Exception as e:
+        return HTTPException(status_code=500, detail=str(e))
