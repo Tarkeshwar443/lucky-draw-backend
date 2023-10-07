@@ -209,18 +209,25 @@ async def update_csv_data():
         #csv_file = "dummy.csv"  # Replace with the path to your CSV file
 
          # Make an HTTP GET request to the external API to get the CSV file
-        api_url = "https://example.com/api/get-csv"  # Replace with the actual API URL
-        response = requests.get(api_url)
+        # api_url = "https://example.com/api/get-csv"  # Replace with the actual API URL
+        # response = requests.get(api_url)
         
-        if response.status_code != 200:
-            raise HTTPException(status_code=500, detail="Failed to fetch CSV data from the external API")
+        # if response.status_code != 200:
+        #     raise HTTPException(status_code=500, detail="Failed to fetch CSV data from the external API")
 
-        # Read the CSV content from the API response
-        csv_content = response.text
+        # # Read the CSV content from the API response
+        # csv_content = response.text
 
-        # Parse CSV content into a DataFrame
-        df = pd.read_csv(io.StringIO(csv_content))
-        #df = pd.read_csv(csv_file)
+        # # Parse CSV content into a DataFrame
+        # df = pd.read_csv(io.StringIO(csv_content))
+        # #df = pd.read_csv(csv_file)
+        # print(df)
+        # # Connect to the MySQL database
+        # connection = mysql.connector.connect(**db_config)
+        # cursor = connection.cursor()
+        # Read the CSV file
+        csv_file = "dummy.csv"  # Replace with the path to your CSV file
+        df = pd.read_csv(csv_file)
         print(df)
         # Connect to the MySQL database
         connection = mysql.connector.connect(**db_config)
@@ -231,7 +238,7 @@ async def update_csv_data():
         cursor.execute(drop_table_query)
         create_table_query = """
         CREATE TABLE IF NOT EXISTS EmpDetails (
-            EmpID INT PRIMARY KEY,
+            EmpID VARCHAR(255) PRIMARY KEY,
             EmpName VARCHAR(255),
             used INT
         )
@@ -241,7 +248,7 @@ async def update_csv_data():
         create_table_query = """
         CREATE TABLE IF NOT EXISTS winnerDetails (
             serial_number INT PRIMARY KEY,
-            EmpID INT,
+            EmpID VARCHAR(255),
             EmpName VARCHAR(255),
             prize_name VARCHAR(255)
         )
