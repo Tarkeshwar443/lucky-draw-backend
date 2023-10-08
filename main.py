@@ -342,7 +342,7 @@ async def get_data():
         cursor = conn.cursor()
 
         # Retrieve all data from the database
-        select_query = "SELECT * FROM winnerdetails"
+        select_query = "SELECT * FROM winnerdetails order by serial_number desc"
         cursor.execute(select_query)
 
         # Fetch all rows
