@@ -273,38 +273,38 @@ async def update_csv_data():
 
 
 
-@app.get("/update-csv-onspin")
-async def update_csv_data():
-    try:
-        # Read the CSV file
-        csv_file = "dummy.csv"  # Replace with the path to your CSV file
-        df = pd.read_csv(csv_file)
-        print(df)
-        # Connect to the MySQL database
-        connection = mysql.connector.connect(**db_config)
-        cursor = connection.cursor()
+# @app.get("/update-csv-onspin")
+# async def update_csv_data():
+#     try:
+#         # Read the CSV file
+#         csv_file = "dummy.csv"  # Replace with the path to your CSV file
+#         df = pd.read_csv(csv_file)
+#         print(df)
+#         # Connect to the MySQL database
+#         connection = mysql.connector.connect(**db_config)
+#         cursor = connection.cursor()
 
-        # Iterate through each row in the CSV
-        for index, row in df.iterrows():
-            if not row_exists(cursor, row):
-                # Row doesn't exist, insert it
-                insert_query = """
-                INSERT INTO employeDetails (Employee_ID,Employee_Name, used)
-                VALUES (%s, %s, %s)
-                """
-                cursor.execute(insert_query, (row["EmpID"], row["EmpName"], 0 ))
-# Commit the changes to the database
-        connection.commit()
-        return {"message": "CSV data updated in the database"}
+#         # Iterate through each row in the CSV
+#         for index, row in df.iterrows():
+#             if not row_exists(cursor, row):
+#                 # Row doesn't exist, insert it
+#                 insert_query = """
+#                 INSERT INTO employeDetails (Employee_ID,Employee_Name, used)
+#                 VALUES (%s, %s, %s)
+#                 """
+#                 cursor.execute(insert_query, (row["EmpID"], row["EmpName"], 0 ))
+# # Commit the changes to the database
+#         connection.commit()
+#         return {"message": "CSV data updated in the database"}
 
-    except Error as e:
-        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+#     except Error as e:
+#         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
-    # finally:
-    #     # Close the database connection
-    #     if connection.is_connected():
-    #         cursor.close()
-    #         connection.close()
+#     # finally:
+#     #     # Close the database connection
+#     #     if connection.is_connected():
+#     #         cursor.close()
+#     #         connection.close()
 
 
  #to store backup data of prize
